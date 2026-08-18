@@ -3,22 +3,14 @@
 #include <math.h>
 
 XYController::XYController()
-    : stepperX(
-          AccelStepper::DRIVER,
-          X_STEP,
-          X_DIR),
-      stepperY(
-          AccelStepper::DRIVER,
-          Y_STEP,
-          Y_DIR)
-{
-}
+    : stepperX(AccelStepper::DRIVER, X_STEP, X_DIR),
+      stepperY(AccelStepper::DRIVER, Y_STEP, Y_DIR) {}
 
-void XYController::begin()
-{
+void XYController::begin() {
     pinMode(X_HOME, INPUT_PULLUP);
     pinMode(Y_HOME, INPUT_PULLUP);
     pinMode(STEPPER_EN, OUTPUT);
+
     disableMotors();
     stepperX.setMaxSpeed(MAX_SPEED);
     stepperX.setAcceleration(ACCELERATION);
@@ -26,18 +18,10 @@ void XYController::begin()
     stepperY.setAcceleration(ACCELERATION);
 }
 
-void XYController::enableMotors()
-{
-    digitalWrite(STEPPER_EN, LOW);
-}
+void XYController::enableMotors() { digitalWrite(STEPPER_EN, LOW); }
+void XYController::disableMotors() { digitalWrite(STEPPER_EN, HIGH); }
 
-void XYController::disableMotors()
-{
-    digitalWrite(STEPPER_EN, HIGH);
-}
-
-void XYController::home()
-{
+void XYController::home() {
     enableMotors();
     Serial.println("Homing X...");
     homeAxis(stepperX, X_HOME, X_HOME_DIR);
@@ -48,8 +32,7 @@ void XYController::home()
     Serial.println("Homing complete");
 }
 
-void XYController::moveXY(float x_mm, float y_mm)
-{
+void XYController::moveXY(float x_mm, float y_mm) {
     enableMotors();
     x_mm = constrain(x_mm, 0.0f, X_MAX_MM);
     y_mm = constrain(y_mm, 0.0f, Y_MAX_MM);
@@ -57,84 +40,58 @@ void XYController::moveXY(float x_mm, float y_mm)
     stepperY.moveTo(lround(y_mm * Y_STEPS_PER_MM));
 }
 
-void XYController::moveXYAndWait(
-    float x_mm,
-    float y_mm)
-{
+void XYController::moveXYAndWait(float x_mm, float y_mm) {
     moveXY(x_mm, y_mm);
     waitForMotion();
 }
 
-void XYController::waitForMotion()
-{
-    while (
-        stepperX.distanceToGo() != 0 ||
-        stepperY.distanceToGo() != 0)
-    {
+void XYController::waitForMotion() {
+    while (stepperX.distanceToGo() || stepperY.distanceToGo()) {
         stepperX.run();
         stepperY.run();
     }
 }
 
-float XYController::getX()
-{
-    return stepperX.currentPosition() / X_STEPS_PER_MM;
-}
+float XYController::getX() { return stepperX.currentPosition() / X_STEPS_PER_MM; }
+float XYController::getY() { return stepperY.currentPosition() / Y_STEPS_PER_MM; }
 
-float XYController::getY()
-{
-    return stepperY.currentPosition() / Y_STEPS_PER_MM;
-}
-
-void XYController::homeAxis(
-    AccelStepper& motor,
-    int switchPin,
-    int homeDirection)
-{
-    unsigned long start;
-
-    // FAST SEEK
+void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirection) {
+    unsigned long start = millis();
+    
     motor.setMaxSpeed(HOMING_FAST_SPEED);
-    start = millis();
-    while (digitalRead(switchPin) == HIGH)
-    {
+    while (digitalRead(switchPin) == HIGH) {
         motor.move(homeDirection);
         motor.run();
         if (millis() - start > HOMING_TIMEOUT_MS)
             failSafe("Homing timeout");
     }
     delay(100);
-
-    // BACK OFF
+    
     motor.move(-homeDirection * HOMING_BACKOFF_STEPS);
-    while (motor.distanceToGo() != 0)
+    while (motor.distanceToGo())
         motor.run();
     delay(100);
 
-    // SLOW SEEK
     motor.setMaxSpeed(HOMING_SLOW_SPEED);
     start = millis();
-    while (digitalRead(switchPin) == HIGH)
-    {
+    while (digitalRead(switchPin) == HIGH) {
         motor.move(homeDirection);
         motor.run();
         if (millis() - start > HOMING_TIMEOUT_MS)
             failSafe("Precision homing timeout");
     }
+
     motor.setCurrentPosition(0);
     motor.setMaxSpeed(MAX_SPEED);
 }
 
 [[noreturn]]
-void XYController::failSafe(const char* message)
-{
+void XYController::failSafe(const char* message) {
     Serial.println("************************");
     Serial.println("EMERGENCY STOP");
     Serial.println(message);
     Serial.println("************************");
     disableMotors();
     while (true)
-    {
         delay(1000);
-    }
 }
