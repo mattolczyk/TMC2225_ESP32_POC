@@ -58,9 +58,9 @@ float XYController::getY() { return stepperY.currentPosition() / Y_STEPS_PER_MM;
 void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirection) {
     unsigned long start = millis();
     
-    motor.setMaxSpeed(HOMING_FAST_SPEED);
+    motor.setMaxSpeed(HOMING_FAST_SPEED);    
+    motor.moveTo(homeDirection * 1000000L);
     while (digitalRead(switchPin) == HIGH) {
-        motor.move(homeDirection);
         motor.run();
         yield();
 
@@ -72,12 +72,14 @@ void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirectio
     motor.move(-homeDirection * HOMING_BACKOFF_STEPS);
     while (motor.distanceToGo())
         motor.run();
+        yield();
     delay(100);
 
     motor.setMaxSpeed(HOMING_SLOW_SPEED);
     start = millis();
+
+    motor.moveTo(homeDirection * 1000000L);
     while (digitalRead(switchPin) == HIGH) {
-        motor.move(homeDirection);
         motor.run();
         yield();
         
