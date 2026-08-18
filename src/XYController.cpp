@@ -50,16 +50,6 @@ void XYController::moveXY(float x_mm, float y_mm) {
     stepperY.moveTo(lround(y_mm * Y_STEPS_PER_MM));
 }
 
-void XYController::run() {
-    stepperX.run();
-    stepperY.run();
-}
-
-bool XYController::isMoving() {
-    return stepperX.distanceToGo() ||
-           stepperY.distanceToGo();
-}
-
 bool XYController::isIdle() {
     return !isMoving();
 }
@@ -102,6 +92,7 @@ void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirectio
     }
 
     motor.setCurrentPosition(0);
+    motor.moveTo(0);
     motor.setMaxSpeed(MAX_SPEED);
 }
 
