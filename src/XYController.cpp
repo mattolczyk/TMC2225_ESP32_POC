@@ -32,6 +32,16 @@ void XYController::home() {
     Serial.println("Homing complete");
 }
 
+void XYController::run() {
+    stepperX.run();
+    stepperY.run();
+}
+
+bool XYController::isMoving() {
+    return stepperX.distanceToGo() ||
+           stepperY.distanceToGo();
+}
+
 void XYController::moveXY(float x_mm, float y_mm) {
     enableMotors();
     x_mm = constrain(x_mm, 0.0f, X_MAX_MM);
