@@ -62,6 +62,8 @@ void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirectio
     while (digitalRead(switchPin) == HIGH) {
         motor.move(homeDirection);
         motor.run();
+        yield();
+
         if (millis() - start > HOMING_TIMEOUT_MS)
             failSafe("Homing timeout");
     }
@@ -77,6 +79,8 @@ void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirectio
     while (digitalRead(switchPin) == HIGH) {
         motor.move(homeDirection);
         motor.run();
+        yield();
+        
         if (millis() - start > HOMING_TIMEOUT_MS)
             failSafe("Precision homing timeout");
     }
