@@ -50,17 +50,20 @@ void XYController::moveXY(float x_mm, float y_mm) {
     stepperY.moveTo(lround(y_mm * Y_STEPS_PER_MM));
 }
 
-void XYController::moveXYAndWait(float x_mm, float y_mm) {
-    moveXY(x_mm, y_mm);
-    waitForMotion();
+void XYController::run() {
+    stepperX.run();
+    stepperY.run();
 }
 
-void XYController::waitForMotion() {
-    while (stepperX.distanceToGo() || stepperY.distanceToGo()) {
-        stepperX.run();
-        stepperY.run();
-    }
+bool XYController::isMoving() {
+    return stepperX.distanceToGo() ||
+           stepperY.distanceToGo();
 }
+
+bool XYController::isIdle() {
+    return !isMoving();
+}
+
 
 float XYController::getX() { return stepperX.currentPosition() / X_STEPS_PER_MM; }
 float XYController::getY() { return stepperY.currentPosition() / Y_STEPS_PER_MM; }
