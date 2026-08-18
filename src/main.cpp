@@ -16,18 +16,5 @@ void setup()
 
 void loop()
 {
-//DEMO
-    xy.moveXYAndWait(100, 50);
-    delay(1000);
-    xy.moveXYAndWait(50, 100);
-    delay(1000);
-    xy.moveXYAndWait(0, 0);
-    Serial.printf(
-        "X=%.2f mm  Y=%.2f mm\n",
-        xy.getX(),
-        xy.getY());
-    xy.disableMotors();
-    delay(5000);
-    xy.home();  
-//DEMO
+xy.run();
 }
