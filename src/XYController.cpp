@@ -70,9 +70,10 @@ void XYController::homeAxis(AccelStepper& motor, int switchPin, int homeDirectio
     delay(100);
     
     motor.move(-homeDirection * HOMING_BACKOFF_STEPS);
-    while (motor.distanceToGo())
+    while (motor.distanceToGo()) {
         motor.run();
         yield();
+    }
     delay(100);
 
     motor.setMaxSpeed(HOMING_SLOW_SPEED);
